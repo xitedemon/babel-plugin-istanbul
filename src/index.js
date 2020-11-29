@@ -1,8 +1,10 @@
 import { realpathSync } from 'fs'
 import { declare } from '@babel/helper-plugin-utils'
-import { programVisitor } from 'istanbul-lib-instrument'
+import programVisitor from './visitor.js'
 import TestExclude from 'test-exclude'
 import schema from '@istanbuljs/schema'
+
+export { default as readCoverage } from './read-coverage.js'
 
 function getRealpath (n) {
   try {
@@ -98,7 +100,7 @@ export default declare(api => {
           }
           const result = this.__dv__.exit(path)
           if (this.opts.onCover) {
-            this.opts.onCover(getRealpath(this.file.opts.filename), result.fileCoverage)
+            this.opts.onCover(getRealpath(this.file.opts.filename), result.fileCoverage, result.sourceMappingURL)
           }
         }
       }
