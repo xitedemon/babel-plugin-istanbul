@@ -11,6 +11,9 @@
     "istanbul-lib-coverage": "^3.0.0",
     "test-exclude": "^6.0.0"
   },
+  "peerDependencies": {
+    "@babel/core": "^7"
+  },
   "devDependencies": {
     "@babel/cli": "^7.7.5",
     "@babel/core": "^7.7.5",

@@ -20,7 +20,7 @@ To integrate with testing tools, please see the [Integrations](#integrations) se
 Install it:
 
 ```
-npm install --save-dev babel-plugin-istanbul
+npm install --save-dev babel-plugin-istanbul @babel/core
 ```
 
 Add it to `.babelrc` in test mode:

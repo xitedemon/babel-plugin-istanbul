@@ -59,7 +59,7 @@ function makeShouldSkip () {
 }
 
 export default declare(api => {
-  api.assertVersion(7)
+  api.assertVersion('^7')
 
   const shouldSkip = makeShouldSkip()
 

@@ -2,7 +2,7 @@ import { declare } from '@babel/helper-plugin-utils'
 import { MAGIC_KEY, MAGIC_VALUE } from './constants'
 
 export default declare(api => {
-  api.assertVersion(7)
+  api.assertVersion('^7')
 
   return {
     visitor: {
