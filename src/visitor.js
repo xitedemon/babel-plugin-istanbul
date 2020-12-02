@@ -1,5 +1,4 @@
 import { createHash } from 'crypto'
-import { template } from '@babel/core'
 import { defaults } from '@istanbuljs/schema'
 import { SourceCoverage } from './source-coverage'
 import { SHA, MAGIC_KEY, MAGIC_VALUE } from './constants'
@@ -507,43 +506,6 @@ const codeVisitor = {
   ConditionalExpression: entries(coverTernary),
   LogicalExpression: entries(coverLogicalExpression)
 }
-const globalTemplateAlteredFunction = template(`
-        var Function = (function(){}).constructor;
-        var global = (new Function(GLOBAL_COVERAGE_SCOPE))();
-`)
-const globalTemplateFunction = template(`
-        var global = (new Function(GLOBAL_COVERAGE_SCOPE))();
-`)
-const globalTemplateVariable = template(`
-        var global = GLOBAL_COVERAGE_SCOPE;
-`)
-// the template to insert at the top of the program.
-const coverageTemplate = template(
-    `
-    function COVERAGE_FUNCTION () {
-        var path = PATH;
-        var hash = HASH;
-        GLOBAL_COVERAGE_TEMPLATE
-        var gcv = GLOBAL_COVERAGE_VAR;
-        var coverageData = INITIAL;
-        var coverage = global[gcv] || (global[gcv] = {});
-        if (!coverage[path] || coverage[path].hash !== hash) {
-            coverage[path] = coverageData;
-        }
-
-        var actualCoverage = coverage[path];
-        {
-            // @ts-ignore
-            COVERAGE_FUNCTION = function () {
-                return actualCoverage;
-            }
-        }
-
-        return actualCoverage;
-    }
-`,
-    { preserveComments: true }
-)
 // the rewire plugin (and potentially other babel middleware)
 // may cause files to be instrumented twice, see:
 // https://github.com/istanbuljs/babel-plugin-istanbul/issues/94
@@ -582,7 +544,45 @@ function shouldIgnoreFile (programNode) {
  * @param {object} [opts.inputSourceMap=undefined] the input source map, that maps the uninstrumented code back to the
  * original code.
  */
-function programVisitor (types, sourceFilePath, opts) {
+function programVisitor ({ types, template }, sourceFilePath, opts) {
+  const globalTemplateAlteredFunction = template(`
+    var Function = (function(){}).constructor;
+    var global = (new Function(GLOBAL_COVERAGE_SCOPE))();
+  `)
+  const globalTemplateFunction = template(`
+    var global = (new Function(GLOBAL_COVERAGE_SCOPE))();
+  `)
+  const globalTemplateVariable = template(`
+    var global = GLOBAL_COVERAGE_SCOPE;
+  `)
+  // the template to insert at the top of the program.
+  const coverageTemplate = template(
+    `
+      function COVERAGE_FUNCTION () {
+        var path = PATH;
+        var hash = HASH;
+        GLOBAL_COVERAGE_TEMPLATE
+        var gcv = GLOBAL_COVERAGE_VAR;
+        var coverageData = INITIAL;
+        var coverage = global[gcv] || (global[gcv] = {});
+        if (!coverage[path] || coverage[path].hash !== hash) {
+          coverage[path] = coverageData;
+        }
+
+        var actualCoverage = coverage[path];
+        {
+          // @ts-ignore
+          COVERAGE_FUNCTION = function () {
+            return actualCoverage;
+          }
+        }
+
+        return actualCoverage;
+      }
+    `,
+    { preserveComments: true }
+  )
+
   const T = types
   opts = {
     ...defaults.instrumentVisitor,

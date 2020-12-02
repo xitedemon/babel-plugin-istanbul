@@ -63,7 +63,6 @@ export default declare(api => {
 
   const shouldSkip = makeShouldSkip()
 
-  const t = api.types
   return {
     visitor: {
       Program: {
@@ -88,7 +87,7 @@ export default declare(api => {
               visitorOptions[name] = schema.defaults.instrumentVisitor[name]
             }
           })
-          this.__dv__ = programVisitor(t, realPath, {
+          this.__dv__ = programVisitor(api, realPath, {
             ...visitorOptions,
             inputSourceMap
           })
